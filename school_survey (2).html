@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>校园满意度问卷调查</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  /* 顶部标题栏 */
+  .topbar {
+    background: #fff;
+    text-align: center;
+    padding: 14px 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    border-bottom: 1px solid #e8e8e8;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar .back-btn {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #8B2500;
+    cursor: pointer;
+    font-weight: 500;
+    display: none;
+    background: none;
+    border: none;
+    padding: 6px 4px;
+  }
+  .topbar .back-btn:active { opacity: 0.6; }
+  .topbar .accent-line {
+    display: block;
+    height: 3px;
+    background: #eee;
+    margin: 0 -16px -14px;
+    margin-top: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .topbar .accent-line .fill {
+    display: block;
+    height: 100%;
+    background: #8B2500;
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+  /* 问卷容器 */
+  .survey-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 0 100px;
+  }
+  .intro-card {
+    background: #fff;
+    margin: 12px;
+    padding: 24px 20px;
+    border-radius: 4px;
+  }
+  .intro-card h2 {
+    font-size: 20px;
+    color: #222;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .intro-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 8px;
+  }
+  .intro-card .note {
+    color: #999;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  /* 题目卡片 */
+  .q-card {
+    background: #fff;
+    margin: 12px;
+    padding: 20px 16px 24px;
+    border-radius: 4px;
+  }
+  .q-title {
+    font-size: 17px;
+    color: #222;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .q-title .req {
+    color: #8B2500;
+    margin-right: 4px;
+  }
+  /* 横向单选 */
+  .radio-row {
+    display: flex;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .radio-col {
+    flex: 1;
+    text-align: center;
+    padding: 14px 4px 16px;
+    cursor: pointer;
+    position: relative;
+    border-right: 1px solid #f0f0f0;
+    transition: background 0.15s;
+  }
+  .radio-col:last-child { border-right: none; }
+  .radio-col:active { background: #faf5f5; }
+  .radio-col .label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .radio-col .circle {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin: 0 auto;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .radio-col.selected {
+    background: #fdf8f7;
+  }
+  .radio-col.selected .circle {
+    border-color: #8B2500;
+  }
+  .radio-col.selected .circle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #8B2500;
+    border-radius: 50%;
+  }
+  .radio-col.selected .label {
+    color: #8B2500;
+    font-weight: 600;
+  }
+  /* 底部提交栏 */
+  .submit-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid #e8e8e8;
+    z-index: 20;
+  }
+  .submit-bar .btn {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 14px;
+    background: #8B2500;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .submit-bar .btn:active { opacity: 0.85; }
+  .submit-bar .btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  /* 学号页 */
+  .id-card {
+    background: #fff;
+    margin: 12px;
+    padding: 24px 20px;
+    border-radius: 4px;
+  }
+  .id-card h3 {
+    font-size: 18px;
+    color: #222;
+    margin-bottom: 6px;
+  }
+  .id-card .sub {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+  .field {
+    margin-bottom: 20px;
+  }
+  .field label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .field label .req { color: #8B2500; }
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+    background: #fff;
+  }
+  .field input:focus {
+    border-color: #8B2500;
+  }
+  /* 结果页 */
+  .result-card {
+    background: #fff;
+    margin: 24px 12px;
+    padding: 32px 24px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .result-card .big-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+  .result-card h2 {
+    font-size: 24px;
+    color: #8B2500;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .result-card .info-box {
+    background: #fdf5f5;
+    border: 1px solid #f0d5d0;
+    border-radius: 4px;
+    padding: 16px;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 14px;
+    color: #8B2500;
+  }
+  .result-card .info-box div {
+    margin-bottom: 8px;
+  }
+  .result-card .info-box div:last-child { margin-bottom: 0; }
+  .result-card .msg {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.9;
+  }
+  .result-card .disclaimer {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 20px;
+  }
+  .result-card .pass-title {
+    color: #2e7d32;
+  }
+  .again-btn {
+    margin-top: 24px;
+    padding: 10px 32px;
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .again-btn:active { background: #eee; }
+  /* 免责声明弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-mask.show { display: flex; animation: fadeIn 0.25s ease; }
+  .modal-box {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 100%;
+    padding: 28px 24px 24px;
+    text-align: center;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-box .modal-icon {
+    font-size: 44px;
+    margin-bottom: 14px;
+  }
+  .modal-box h3 {
+    font-size: 19px;
+    color: #222;
+    margin-bottom: 14px;
+  }
+  .modal-box p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+    text-align: left;
+    margin-bottom: 8px;
+  }
+  .modal-box .modal-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 13px;
+    background: #8B2500;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-box .modal-btn:active { opacity: 0.85; }
+  /* 屏幕切换 */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* 进度提示 */
+  .progress-text {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+    padding: 8px 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn" onclick="goBack()">← 返回</button>
+  校园满意度问卷调查
+  <span class="accent-line"><span class="fill" id="progressFill"></span></span>
+</div>
+
+<!-- 免责声明弹窗 -->
+<div class="modal-mask show" id="disclaimerModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3>免责声明</h3>
+    <p>1. 本页面为娱乐恶搞用途，所有内容均为虚构，不代表任何真实学校或机构。</p>
+    <p>2. 问卷中"即将开除"等结果纯属玩笑，不会产生任何实际后果。</p>
+    <p>3. 请勿将本页面用于任何违法或不当用途，由此产生的一切后果由使用者自行承担。</p>
+    <p style="text-align:center;color:#999;font-size:12px;margin-top:12px;">本弹窗只会出现一次</p>
+    <button class="modal-btn" onclick="closeDisclaimer()">我知道了</button>
+  </div>
+</div>
+
+<div class="survey-wrap">
+
+  <!-- 欢迎页 -->
+  <div class="screen active" id="welcome">
+    <div class="intro-card">
+      <h2>校园满意度问卷调查</h2>
+      <p>尊敬的同学：</p>
+      <p>为全面了解同学们对学校各方面工作的满意度，进一步提升办学质量和服务水平，学校特开展本次问卷调查。</p>
+      <p>本问卷共 <strong>8</strong> 道题，预计用时 1 分钟。请根据您的真实感受填写，您的反馈将作为学校改进工作的重要依据。</p>
+      <p class="note">本问卷采用匿名方式（才怪），所有数据仅用于学校工作改进。</p>
+    </div>
+    <div class="submit-bar">
+      <button class="btn" onclick="startSurvey()">开始填写</button>
+    </div>
+  </div>
+
+  <!-- 题目页 -->
+  <div class="screen" id="question">
+    <div class="progress-text" id="progressText">第 1 题 / 共 8 题</div>
+    <div class="q-card">
+      <div class="q-title"><span class="req">*</span><span id="qNum">1.</span> <span id="qText"></span></div>
+      <div class="radio-row" id="qOptions"></div>
+    </div>
+  </div>
+
+  <!-- 学号页 -->
+  <div class="screen" id="idPage">
+    <div class="id-card">
+      <h3>信息登记</h3>
+      <p class="sub">为便于后续跟进反馈，请填写以下信息</p>
+      <div class="field">
+        <label><span class="req">*</span> 学号</label>
+        <input type="text" id="studentId" placeholder="请输入您的学号" maxlength="20">
+      </div>
+      <div class="field">
+        <label><span class="req">*</span> 班级</label>
+        <input type="text" id="className" placeholder="请输入您的班级" maxlength="30">
+      </div>
+    </div>
+    <div class="submit-bar">
+      <button class="btn" onclick="submitId()">提交</button>
+    </div>
+  </div>
+
+  <!-- 开除结果页 -->
+  <div class="screen" id="expelPage">
+    <div class="result-card">
+      <div class="big-icon">🚨</div>
+      <h2>收到反馈，即将开除</h2>
+      <div class="info-box" id="expelInfo"></div>
+      <div class="msg">
+        您的反馈已记录在案<br>
+        相关部门将在 24 小时内与您联系<br>
+        请保持通讯畅通
+      </div>
+      <div class="disclaimer">（本页面纯属娱乐，请勿当真）</div>
+      <button class="again-btn" onclick="restart()">重新填写</button>
+    </div>
+  </div>
+
+  <!-- 全部通过页 -->
+  <div class="screen" id="passPage">
+    <div class="result-card">
+      <div class="big-icon">✅</div>
+      <h2 class="pass-title">提交成功</h2>
+      <div class="msg">
+        感谢您的参与！<br>
+        您对学校各方面工作均表示满意<br>
+        您的认可是我们前进的动力
+      </div>
+      <div class="disclaimer">（本问卷纯属娱乐）</div>
+      <button class="again-btn" onclick="restart()">再填一次</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { text: "总体而言，您对学校各方面的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] },
+  { text: "您对学校食堂的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] },
+  { text: "学校老师会打人吗？", options: ["不会", "老师暴力打人", "老师体罚学生", "老师言语侮辱学生"] },
+  { text: "您对学校老师的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] },
+  { text: "您觉得学校布置的作业多吗？", options: ["没有作业", "有点多", "特别多", "要写一个晚上"] },
+  { text: "您对学校厕所的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] },
+  { text: "您对校长的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] },
+  { text: "您对学校宿舍的满意度如何？", options: ["非常满意", "满意", "一般", "不满意"] }
+];
+
+let currentQ = 0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  // 控制返回按钮显示
+  const backBtn = document.getElementById('backBtn');
+  backBtn.style.display = (id === 'idPage' || id === 'question') ? 'block' : 'none';
+  // 进度条
+  const fill = document.getElementById('progressFill');
+  if (id === 'question' || id === 'idPage') {
+    fill.style.width = ((currentQ + 1) / questions.length * 100) + '%';
+  } else if (id === 'expelPage' || id === 'passPage') {
+    fill.style.width = '100%';
+  } else {
+    fill.style.width = '0%';
+  }
+}
+
+function goBack() {
+  const active = document.querySelector('.screen.active').id;
+  if (active === 'idPage') {
+    // 返回到当前题目
+    renderQuestion();
+    showScreen('question');
+  } else if (active === 'question') {
+    // 题目页返回上一题；第一题返回欢迎页
+    if (currentQ > 0) {
+      currentQ--;
+      renderQuestion();
+    } else {
+      showScreen('welcome');
+    }
+  }
+}
+
+function startSurvey() {
+  currentQ = 0;
+  renderQuestion();
+  showScreen('question');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('progressText').textContent = `第 ${currentQ + 1} 题 / 共 ${questions.length} 题`;
+  document.getElementById('qNum').textContent = (currentQ + 1) + '.';
+  document.getElementById('qText').textContent = q.text;
+  // 更新顶部进度条
+  document.getElementById('progressFill').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+  const html = q.options.map((opt, i) =>
+    `<div class="radio-col" onclick="selectOption(${i})">
+       <span class="label">${opt}</span>
+       <span class="circle"></span>
+     </div>`
+  ).join('');
+  document.getElementById('qOptions').innerHTML = html;
+}
+
+function selectOption(index) {
+  // 高亮选中
+  const cols = document.querySelectorAll('.radio-col');
+  cols.forEach((c, i) => c.classList.toggle('selected', i === index));
+
+  setTimeout(() => {
+    if (index === 0) {
+      currentQ++;
+      if (currentQ >= questions.length) {
+        showScreen('passPage');
+      } else {
+        renderQuestion();
+      }
+    } else {
+      showScreen('idPage');
+    }
+  }, 250);
+}
+
+function submitId() {
+  const sid = document.getElementById('studentId').value.trim();
+  const cls = document.getElementById('className').value.trim();
+  if (!sid) { alert('请输入学号'); return; }
+  if (!cls) { alert('请输入班级'); return; }
+
+  document.getElementById('expelInfo').innerHTML =
+    `<div><strong>学号：</strong>${sid}</div>
+     <div><strong>班级：</strong>${cls}</div>
+     <div><strong>处理状态：</strong>已提交政教处审批</div>`;
+  document.getElementById('studentId').value = '';
+  document.getElementById('className').value = '';
+  showScreen('expelPage');
+}
+
+function closeDisclaimer() {
+  document.getElementById('disclaimerModal').classList.remove('show');
+  try { localStorage.setItem('disclaimerSeen', '1'); } catch(e) {}
+}
+
+// 页面加载时检查是否已看过免责声明
+(function() {
+  try {
+    if (localStorage.getItem('disclaimerSeen') === '1') {
+      document.getElementById('disclaimerModal').classList.remove('show');
+    }
+  } catch(e) {}
+})();
+
+function restart() {
+  currentQ = 0;
+  showScreen('welcome');
+}
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
